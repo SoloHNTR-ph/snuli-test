@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FormController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,23 +22,23 @@ use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request;
 
-Route::get('/form', function () {
-    return view('form');
-})->name('form.show');
+Route::get('/form', [FormController::class, 'show'])->name('form.show');
 
-Route::post('/form', function (Request $request) {
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'message' => 'required|string'
-    ]);
-
-    // Process form data here
-    
-    return back()->with('success', 'Form submitted successfully!');
-})->name('form.submit');
+Route::post('/form', [FormController::class, 'submit'])->name('form.submit');
 
 // routes/web.php
 Route::get('/', function () {
     return view('home');
 });
+
+Route::get('/register', function () {
+    return view('register');
+})->name('register');
+
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');

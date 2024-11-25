@@ -20,7 +20,7 @@ class FormController extends Controller
         ]);
 
         // Process form data here
-        
+
         return back()->with('success', 'Form submitted successfully!');
     }
 }
