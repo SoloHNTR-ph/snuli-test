@@ -19,7 +19,9 @@
                         </div>
                     </div>
                     <div class="flex items-center">
-                        <span class="text-gray-600 mr-4" id="welcomeMessage">Welcome, User</span>
+                        <span class="text-gray-600 mr-4" id="welcomeMessage">
+                            Welcome, {{ session('username', 'User') }}
+                        </span>
                         <form method="POST" action="/logout" id="logoutForm">
                             @csrf
                             <button type="submit" class="text-red-600 hover:text-red-800">Logout</button>

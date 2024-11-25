@@ -171,27 +171,27 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
+        // Store session data
+        const response = await fetch('/login/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({
+            name: userData.name,
+            email: userData.email,
+            user_id: userData.user_id,
+            created_at: userData.created_at
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to store session');
+        }
+
         // Show success message and redirect
         showModal('You have logged in successfully!', () => {
-          window.location.href = '/dashboard'; // Redirect to dashboard or desired page
-        });
-      } catch (error) {
-        console.error('Error logging in: ', error);
-        showModal('An error occurred while logging in.');
-      }
-    });
-  }
-
-  // Login form logic for modal
-  const loginFormModal = document.getElementById('signinFormModal');
-  if (loginFormModal) {
-    loginFormModal.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent default form submission
-
-      // Get form data
-      const email = loginFormModal.email.value.trim();
-      const password = loginFormModal.password.value.trim();
-
       // Basic client-side validation
       if (!email || !password) {
         showModal('Please fill out all fields.');

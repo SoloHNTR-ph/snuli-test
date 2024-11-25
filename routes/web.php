@@ -39,6 +39,16 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+Route::post('/login/session', function (Request $request) {
+    $request->session()->put([
+        'name' => $request->name,
+        'email' => $request->email,
+        'user_id' => $request->user_id,
+        'created_at' => $request->created_at
+    ]);
+    return response()->json(['success' => true]);
+})->name('login.session');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
