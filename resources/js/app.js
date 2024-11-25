@@ -1,6 +1,6 @@
 import './bootstrap';
 import { db } from './firebase';
-import { collection, addDoc, serverTimestamp, getDocs, where, getDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, where, getDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { getAuth, signOut } from 'firebase/auth';
 import bcrypt from 'bcryptjs';
 
@@ -59,23 +59,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Function to get the next user ID
-  async function getNextUserId() {
-    const userIdDocRef = doc(db, 'metadata', 'lastUserId');
-    const userIdDoc = await getDoc(userIdDocRef);
+  // Function to generate the next user_id
+  async function generateUserId() {
+    const lastUserIdDoc = doc(db, 'config', 'lastUserId');
+    const lastUserIdSnapshot = await getDoc(lastUserIdDoc);
 
-    let nextUserId;
-    if (userIdDoc.exists()) {
-      const lastUserId = userIdDoc.data().lastUserId;
-      nextUserId = `te${(parseInt(lastUserId.slice(2)) + 1).toString().padStart(6, '0')}`;
+    let newUserId;
+    if (lastUserIdSnapshot.exists()) {
+      const lastUserId = lastUserIdSnapshot.data().value;
+      const lastUserIdNumber = parseInt(lastUserId.slice(2), 10);
+      const nextUserIdNumber = lastUserIdNumber + 1;
+      newUserId = `te${String(nextUserIdNumber).padStart(6, '0')}`;
     } else {
-      nextUserId = 'te000001'; // Start with the first user ID if it doesn't exist
+      newUserId = 'te000001';
+      // Create the lastUserId document with the initial value
+      await setDoc(lastUserIdDoc, { value: newUserId });
     }
 
-    // Update the last user ID in Firestore
-    await updateDoc(userIdDocRef, { lastUserId: nextUserId });
+    // Update the lastUserId document with the new user_id
+    await updateDoc(lastUserIdDoc, { value: newUserId });
 
-    return nextUserId;
+    return newUserId;
   }
 
   // Registration form logic
@@ -102,26 +106,51 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       try {
+        console.log('Hashing password...');
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Password hashed successfully.');
 
-        // Get the next user ID
-        const userId = await getNextUserId();
+        console.log('Generating user_id...');
+        // Generate user_id
+        const userId = await generateUserId();
         console.log('Generated user_id:', userId);
 
+        console.log('Adding document to Firestore...');
         // Add a new document with a generated id
-        const docRef = await addDoc(collection(db, 'test'), {
+        await addDoc(collection(db, 'test'), {
           user_id: userId,
           name: name,
           email: email,
           password: hashedPassword, // Store the hashed password
           created_at: serverTimestamp(),
         });
-
-        console.log('Document written with ID: ', docRef.id);
+        console.log('Document added successfully.');
 
         // Show success message and reset form
         showModal('Your account has been created successfully!');
+        registerForm.reset();
+      } catch (error) {
+        console.error('Error during registration:', error);
+        showModal('An error occurred while creating your account.');
+      }
+    });
+  }
+
+  // Login form logic
+  const loginForm = document.getElementById('signinForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevent default form submission
+
+      // Get form data
+      const email = loginForm.email.value.trim();
+      const password = loginForm.password.value.trim();
+
+      // Basic client-side validation
+      if (!email || !password) {
+        showModal('Please fill out all fields.');
+        return;
       }
 
       try {
