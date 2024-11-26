@@ -20,7 +20,7 @@
                     </div>
                     <div class="flex items-center">
                         <span class="text-gray-600 mr-4" id="welcomeMessage">
-                            Welcome, {{ session('username', 'User') }}
+                            Welcome, {{ session('name', 'User') }}
                         </span>
                         <form method="POST" action="/logout" id="logoutForm">
                             @csrf
