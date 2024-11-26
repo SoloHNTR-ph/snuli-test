@@ -192,32 +192,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Show success message and redirect
         showModal('You have logged in successfully!', () => {
-      // Basic client-side validation
-      if (!email || !password) {
-        showModal('Please fill out all fields.');
-        return;
-      }
-
-      try {
-        // Fetch user data from Firestore
-        const querySnapshot = await getDocs(collection(db, 'test'), where('email', '==', email));
-        if (querySnapshot.empty) {
-          showModal('Invalid email or password.');
-          return;
-        }
-
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-
-        // Compare the password
-        const isPasswordValid = await bcrypt.compare(password, userData.password);
-        if (!isPasswordValid) {
-          showModal('Invalid email or password.');
-          return;
-        }
-
-        // Show success message and redirect
-        showModal('You have logged in successfully!', () => {
           window.location.href = '/dashboard'; // Redirect to dashboard or desired page
         });
       } catch (error) {
